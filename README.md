@@ -4,3 +4,7 @@
 
 - Température
 - Humidité
+
+## Appareils contrôler
+
+- Prise connecté
