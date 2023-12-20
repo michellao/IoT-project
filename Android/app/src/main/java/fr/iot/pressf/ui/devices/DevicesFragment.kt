@@ -4,9 +4,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import fr.iot.pressf.R
 import fr.iot.pressf.databinding.FragmentDevicesBinding
 
 class DevicesFragment : Fragment() {
@@ -27,11 +30,12 @@ class DevicesFragment : Fragment() {
 
         _binding = FragmentDevicesBinding.inflate(inflater, container, false)
         val root: View = binding.root
+        val dataSet = arrayOf("Device 1", "Device 2", "Device 3")
+        val recyclerView = binding.devicesRecyclerView
+        recyclerView.setHasFixedSize(true)
+        recyclerView.layoutManager = LinearLayoutManager(context)
+        recyclerView.adapter = DevicesAdapter(dataSet)
 
-        val textView: TextView = binding.textHome
-        devicesViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
-        }
         return root
     }
 
