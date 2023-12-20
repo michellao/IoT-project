@@ -23,7 +23,6 @@ class MainActivity : AppCompatActivity() {
         Firebase.appCheck.installAppCheckProviderFactory(
             PlayIntegrityAppCheckProviderFactory.getInstance()
         )
-
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
