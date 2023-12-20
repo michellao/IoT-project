@@ -1,31 +1,8 @@
-
-/**
- * Created by K. Suwatchai (Mobizt)
- *
- * Email: k_suwatchai@hotmail.com
- *
- * Github: https://github.com/mobizt/Firebase-ESP8266
- *
- * Copyright (c) 2023 mobizt
- *
- */
-
-/** This example will show how to authenticate as a user with Email and password.
- *
- * You need to enable Email/Password provider.
- * In Firebase console, select Authentication, select Sign-in method tab,
- * under the Sign-in providers list, enable Email/Password provider.
- *
- * From this example, the user will be granted to access the specific location that matches
- * the user uid.
- *
- * This example will modify the database rules to set up the security rule which need to
- * guard the unauthorized access with the user Email.
- */
-
 #include <Arduino.h>
 #include <WiFi.h>
 #include <FirebaseESP32.h>
+#include "FeatherShieldESP32Pinouts.h"
+#include "Zanshin_BME680.h"
 
 // Provide the token generation process info.
 #include <addons/TokenHelper.h>
@@ -33,32 +10,18 @@
 // Provide the RTDB payload printing info and other helper functions.
 #include <addons/RTDBHelper.h>
 
-/* 1. Define the WiFi credentials */
+/* Define the WiFi credentials */
 #define WIFI_SSID "nanashi-hvywxx9"
 #define WIFI_PASSWORD "4XC;id/rUukJ"
 
-/** 2. Define the API key
- *
- * The API key (required) can be obtained since you created the project and set up
- * the Authentication in Firebase console. Then you will get the API key from
- * Firebase project Web API key in Project settings, on General tab should show the
- * Web API Key.
- *
- * You may need to enable the Identity provider at https://console.cloud.google.com/customer-identity/providers
- * Select your project, click at ENABLE IDENTITY PLATFORM button.
- * The API key also available by click at the link APPLICATION SETUP DETAILS.
- *
- */
 #define API_KEY "AIzaSyA5L8TCPsduWWBVNbrAq9k4ZrDLPTbrEC4"
 
-/* 3. Define the user Email and password that already registerd or added in your project */
 #define USER_EMAIL "sansnom01@proton.me"
 #define USER_PASSWORD "sansnom01@proton.me"
 
-/* 4. If work with RTDB, define the RTDB URL */
 #define DATABASE_URL "esp32-13749-default-rtdb.europe-west1.firebasedatabase.app" //<databaseName>.firebaseio.com or <databaseName>.<region>.firebasedatabase.app
 
-/** 5. Define the database secret (optional)
+/** Define the database secret (optional)
  *
  * This database secret needed only for this example to modify the database rules
  *
@@ -66,22 +29,39 @@
  */
 #define DATABASE_SECRET "DATABASE_SECRET"
 
-/* 6. Define the Firebase Data object */
+#define DEVICE_ID "1"
+#define DEVICE_NAME "Home"
+
+/* Define the Firebase Data object */
 FirebaseData fbdo;
 
-/* 7. Define the FirebaseAuth data for authentication data */
+/* Define the FirebaseAuth data for authentication data */
 FirebaseAuth auth;
 
-/* 8. Define the FirebaseConfig data for config data */
+/* Define the FirebaseConfig data for config data */
 FirebaseConfig config;
 
 unsigned long dataMillis = 0;
 int count = 0;
 
-void setup()
-{
+BME680_Class BME680;
+
+struct SensorReading {
+  int32_t temperature;
+  int32_t humidity;
+  int32_t pressure;
+  int32_t gas;
+};
+
+void setup() {
 
     Serial.begin(115200);
+
+    Serial.print(F("- Initializing BME680 sensor\n"));
+    while (!BME680.begin(I2C_STANDARD_MODE)) {  // Start BME680 using I2C, use first device found
+      Serial.print(F("-  Unable to find BME680. Trying again in 5 seconds.\n"));
+      delay(5000);
+    }
 
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
     Serial.print("Connecting to Wi-Fi");
@@ -116,8 +96,6 @@ void setup()
 
     fbdo.setResponseSize(4096);
 
-    String base_path = "/UsersData/";
-
     /* Assign the callback function for the long running token generation task */
     config.token_status_callback = tokenStatusCallback; // see addons/TokenHelper.h
 
@@ -142,28 +120,47 @@ void setup()
      */
     String var = "$userId";
     String val = "($userId === auth.uid && auth.token.premium_account === true && auth.token.admin === true)";
-    Firebase.setReadWriteRules(fbdo, base_path, var, val, val, DATABASE_SECRET);
+    Firebase.setReadWriteRules(fbdo, "", var, val, val, DATABASE_SECRET);
 
-    /** path for user data is now "/UsersData/<user uid>"
-     * The user UID can be taken from auth.token.uid
-     *
-     * The refresh token can be accessed from Firebase.getRefreshToken().
-     */
+    Firebase.setString(fbdo, ("/devices/" + String(DEVICE_ID) + "/name").c_str(), DEVICE_NAME);
+
+    pinMode(A0,OUTPUT);
+
+    Serial.print(F("- Setting 16x oversampling for all sensors\n"));
+    BME680.setOversampling(TemperatureSensor, Oversample16);
+    BME680.setOversampling(HumiditySensor, Oversample16);
+    BME680.setOversampling(PressureSensor, SensorOff);
+
+    Serial.print(F("- Setting IIR filter to a value of 4 samples\n"));
+    BME680.setIIRFilter(IIR4);
+
+    Serial.print(F("- Disable gas measurement\n"));
+    BME680.setGas(320, 0);
 }
 
-void loop()
-{
-    // Firebase.ready() should be called repeatedly to handle authentication tasks.
 
-    if (millis() - dataMillis > 5000 && Firebase.ready())
-    {
-        dataMillis = millis();
-        String path = "/UsersData/";
-        path += auth.token.uid.c_str(); //<- user uid of current user that sign in with Emal/Password
-        path += "/test/int";
-        Serial.printf("Set int... %s\n", Firebase.setInt(fbdo, path, count++) ? "ok" : fbdo.errorReason().c_str());
 
-        // You can use refresh token from Firebase.getRefreshToken() to sign in next time without providing Email and Password.
-        // See SignInWithRefreshIDToken example.
+void loop() {
+  if (millis() - dataMillis > 1000 && Firebase.ready()) {
+      dataMillis = millis();
+      
+      if (count >= 150){
+          count = 0;
+      }
+      // Firebase.ready() should be called repeatedly to handle authentication tasks.
+    
+      SensorReading sensorData;
+      BME680.getSensorData(sensorData.temperature, sensorData.humidity, sensorData.pressure, sensorData.gas);  // Get readings
+
+      String path = "/data-1";
+
+      count++;
+
+      Firebase.setInt(fbdo, "/latest", count);
+
+      Serial.printf((String(count) + " | Device 1 - set temperature value : %s\n").c_str(), Firebase.setFloat(fbdo, path + "-" + count +"/temperature", sensorData.temperature / 100.0) ? "ok" : fbdo.errorReason().c_str());
+      Serial.printf((String(count) + " | Device 1 - set humidity value : %s\n").c_str(), Firebase.setFloat(fbdo, path + "-" + count +"/humidity", sensorData.humidity / 1000.0) ? "ok" : fbdo.errorReason().c_str());
+
     }
+    analogWrite(A5, 0);
 }
