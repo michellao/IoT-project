@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">Press F</string>
-    <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
+    <string name="title_list_devices">List of devices</string>
+    <string name="title_chart">Chart</string>
 </resources>
