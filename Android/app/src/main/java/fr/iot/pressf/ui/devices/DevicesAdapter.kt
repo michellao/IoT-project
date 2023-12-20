@@ -10,10 +10,7 @@ import fr.iot.pressf.R
 class DevicesAdapter(private val devices: Array<String>) :
     RecyclerView.Adapter<DevicesAdapter.ViewHolder>() {
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val name: TextView
-        init {
-            name = view.findViewById(R.id.device_text_view)
-        }
+        val name: TextView = view.findViewById(R.id.device_text_view)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
