@@ -7,9 +7,9 @@
 
     <fragment
             android:id="@+id/navigation_home"
-            android:name="fr.iot.pressf.ui.home.HomeFragment"
+            android:name="fr.iot.pressf.ui.devices.DevicesFragment"
             android:label="@string/title_list_devices"
-            tools:layout="@layout/fragment_home"/>
+            tools:layout="@layout/fragment_devices"/>
 
     <fragment
             android:id="@+id/navigation_dashboard"
