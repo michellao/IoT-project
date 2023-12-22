@@ -13,7 +13,7 @@
 
     <fragment
             android:id="@+id/navigation_dashboard"
-            android:name="fr.iot.pressf.ui.dashboard.DashboardFragment"
+            android:name="fr.iot.pressf.ui.chart.ChartFragment"
             android:label="@string/title_chart"
-            tools:layout="@layout/fragment_dashboard"/>
+            tools:layout="@layout/fragment_chart"/>
 </navigation>
