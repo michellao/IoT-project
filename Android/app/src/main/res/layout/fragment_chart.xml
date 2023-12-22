@@ -1,22 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<RelativeLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context=".ui.chart.ChartFragment">
 
+    <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/chart"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+        />
+
+    <SeekBar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/seekBarX"
+            android:layout_toStartOf="@id/tvYMax"
+            android:layout_margin="8dp"
+            android:layout_marginEnd="5dp"
+            android:max="150"
+            android:paddingBottom="12dp"
+            />
+
+    <SeekBar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/seekBarY"
+            android:layout_toStartOf="@id/tvXMax"
+            android:layout_margin="8dp"
+            android:layout_marginBottom="35dp"
+            android:layout_marginEnd="5dp"
+            android:max="500"
+            android:paddingBottom="12dp"
+            />
+
     <TextView
-        android:id="@+id/room_name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:textAlignment="center"
-        android:textSize="20sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/tvXMax"
+            android:layout_marginBottom="15dp"
+            android:layout_marginEnd="10dp"
+            android:gravity="end"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            />
+
+    <TextView
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/tvYMax"
+            android:layout_marginBottom="15dp"
+            android:layout_marginEnd="10dp"
+            android:gravity="end"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            />
+</RelativeLayout>
