@@ -46,7 +46,7 @@ FirebaseAuth auth;
 /* Define the FirebaseConfig data for config data */
 FirebaseConfig config;
 
-FirebaseData stream;
+FirebaseData streamFan;
 
 Adafruit_SH1107 display = Adafruit_SH1107(64, 128, &Wire);
 
@@ -106,12 +106,12 @@ void streamCallback(StreamData data) {
   Serial.println();
   bool value = data.to<bool>();
   if(value){
-    analogWrite(A5, 200);
-    show("Etat du ventilteur : true");
+    analogWrite(A5, 0);
+    //show("Etat du ventilteur : true");
   }
   else {
-      analogWrite(A5, 0);
-      show("Etat du ventilteur : false");
+    analogWrite(A5, 0);
+    //show("Etat du ventilteur : false");
   }
 
   // This is the size of stream payload received (current and max value)
@@ -119,25 +119,24 @@ void streamCallback(StreamData data) {
   // and read once and will not update until stream reconnection takes place.
   // This max value will be zero as no payload received in case of ESP8266 which
   // BearSSL reserved Rx buffer size is less than the actual stream payload.
-  Serial.printf("Received stream payload size: %d (Max. %d)\n\n", data.payloadLength(), data.maxPayloadLength());
+  Serial.printf("Received streamFan payload size: %d (Max. %d)\n\n", data.payloadLength(), data.maxPayloadLength());
 }
 
 void streamTimeoutCallback(bool timeout)
 {
   if (timeout)
-    Serial.println("stream timed out, resuming...\n");
+    Serial.println("streamFan timed out, resuming...\n");
 
-  if (!stream.httpConnected())
-    Serial.printf("error code: %d, reason: %s\n\n", stream.httpCode(), stream.errorReason().c_str());
+  if (!streamFan.httpConnected())
+    Serial.printf("error code: %d, reason: %s\n\n", streamFan.httpCode(), streamFan.errorReason().c_str());
 }
 
 void setup() {
 
   Serial.begin(115200);
 
-  initBME680();
   initWifi();
-
+  initBME680();
   /**
   * FIREBASE CONFIGURATION
   */
@@ -166,11 +165,13 @@ void setup() {
   /* Initialize the library with the Firebase authen and config */
   Firebase.begin(&config, &auth);
 
-  stream.keepAlive(5, 5, 1);
-  if (!Firebase.beginStream(stream, "/devices/" + String(DEVICE_ID) + "/fan"))
-    Serial.printf("sream begin error, %s\n\n", stream.errorReason().c_str());
+  streamFan.keepAlive(5, 5, 1);
+  if (!Firebase.beginStream(streamFan, "/devices/" + String(DEVICE_ID) + "/fan"))
+    Serial.printf("sream begin error, %s\n\n", streamFan.errorReason().c_str());
 
-  Firebase.setStreamCallback(stream, streamCallback, streamTimeoutCallback);
+  Firebase.setStreamCallback(streamFan, streamCallback, streamTimeoutCallback);
+
+
   /** Now modify the database rules (if not yet modified)
     *
     * The user, <user uid> in this case will be granted to read and write
@@ -193,44 +194,21 @@ void setup() {
 
   Firebase.setString(fbdo, ("/devices/" + String(DEVICE_ID) + "/name").c_str(), DEVICE_NAME);
 
-  /*
-  if (!Firebase.beginStream(fbdo, "/devices/" + String(DEVICE_ID) + "/fan")) {
-    Serial.println("Erreur de démarrage du flux : " + fbdo.errorReason());
-  }
-  /**/
-
   // Screen monitor configuration
   display.begin(0x3C, true);
+  /*display.clearDisplay();
+  display.setRotation(1);
+  display.setTextSize(1);
+  display.setCursor(0,0);
+  display.setTextColor(SH110X_WHITE);
+  display.println("TEST");
+  display.display();*/
 }
 
 
 
 void loop() {
-/*
-  if (Firebase.getBool(fbdo, "/devices/" + String(DEVICE_ID) + "/fan") && Firebase.ready()) {
-
-    if (fbdo.boolData() == fanValue){
-      show("Etat du ventilteur OK");
-    }
-    else if (fbdo.boolData()){
-      fanValue = true;
-      show("Etat du ventilteur : true");
-    }
-    else {
-      fanValue = false;
-      show("Etat du ventilteur : false");
-    }
-    
-  }
-
-  if(fanValue) {
-      analogWrite(A5, 200);
-    }
-    else {
-      analogWrite(A5, 0);
-  }*/
-
-  if (millis() - dataMillis > 2000 && Firebase.ready()) {
+  if (millis() - dataMillis > 10000 && Firebase.ready()) {
       dataMillis = millis();
       
       if (count > 150){
@@ -248,18 +226,27 @@ void loop() {
       Serial.printf((String(count) + " | Device " + String(DEVICE_ID) + " - set humidity value : %s\n").c_str(), Firebase.setFloat(fbdo, path + "/" + count +"/humidity", sensorData.humidity / 1000.0) ? "ok" : fbdo.errorReason().c_str());
       Serial.printf((String(count) + " | Device " + String(DEVICE_ID) + " - set timestamp value : %s\n").c_str(), Firebase.setTimestamp(fbdo, path + "/" + count +"/timestamp") ? "ok" : fbdo.errorReason().c_str());
       count++;
+      if((sensorData.temperature / 100.0) > 24.00 && !fanValue) {
+        Serial.printf(("INFO | Device " + String(DEVICE_ID) + " - FAN ON : TEMP > 24 : %s\n").c_str(), Firebase.setBool(fbdo, "/devices/" + String(DEVICE_ID) + "/fan", true) ? "ok" : fbdo.errorReason().c_str());
+        fanValue = true;
+      }
+      else if ((sensorData.temperature / 100.0) < 24.00 && fanValue) {
+        Serial.printf(("INFO | Device " + String(DEVICE_ID) + " - FAN OFF : TEMP < 24 : %s\n").c_str(), Firebase.setBool(fbdo, "/devices/" + String(DEVICE_ID) + "/fan", false) ? "ok" : fbdo.errorReason().c_str());
+        fanValue = false;
+      }
   }
   else if (!Firebase.ready()) {
     Serial.println("Firebas not ready !");
+
   }
 }
 
 void show(String msg) {
   display.clearDisplay();
-    display.setRotation(1);
-    display.setTextSize(1);
-    display.setCursor(0,0);
-    display.setTextColor(SH110X_WHITE);
-    display.println(msg);
-    display.display();
+  display.setRotation(1);
+  display.setTextSize(1);
+  display.setCursor(0,0);
+  display.setTextColor(SH110X_WHITE);
+  display.println(msg.c_str());
+  display.display();
 }
