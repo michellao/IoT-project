@@ -7,5 +7,4 @@ import java.security.Timestamp
 data class Device(val name: String? = null)
 
 @IgnoreExtraProperties
-data class Data(val temperature: Float? = null, val humidity: Float? = null, val timestamp: Timestamp? = null)
-
+data class Data(val temperature: Float? = null, val humidity: Float? = null, val timestamp: Long? = null)
