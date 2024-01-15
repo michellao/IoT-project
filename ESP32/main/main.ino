@@ -220,7 +220,7 @@ void loop() {
 
       String path = "/data/" + String(DEVICE_ID);
 
-      Firebase.setIntAsync(fbdo, path+"/latest", count);
+      Firebase.setInt(fbdo, "devices/" + String(DEVICE_ID) + "/latest", count);
 
       Serial.printf((String(count) + " | Device " + String(DEVICE_ID) + " - set temperature value : %s\n").c_str(), Firebase.setFloat(fbdo, path + "/" + count +"/temperature", sensorData.temperature / 100.0) ? "ok" : fbdo.errorReason().c_str());
       Serial.printf((String(count) + " | Device " + String(DEVICE_ID) + " - set humidity value : %s\n").c_str(), Firebase.setFloat(fbdo, path + "/" + count +"/humidity", sensorData.humidity / 1000.0) ? "ok" : fbdo.errorReason().c_str());
