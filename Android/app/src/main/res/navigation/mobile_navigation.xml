@@ -16,4 +16,10 @@
             android:name="fr.iot.pressf.ui.chart.ChartFragment"
             android:label="@string/title_chart"
             tools:layout="@layout/fragment_chart"/>
+
+    <fragment
+        android:id="@+id/navigation_control"
+        android:name="fr.iot.pressf.ui.control.ControlFragment"
+        android:label="@string/title_control"
+        tools:layout="@layout/fragment_control"/>
 </navigation>
