@@ -10,6 +10,7 @@ import fr.iot.pressf.datasource.Device
 import kotlinx.coroutines.launch
 
 class DevicesViewModel : ViewModel() {
+    var selected: Int = 0
     val devices = MutableLiveData<List<Device>?>()
     fun fetchDevices() {
         viewModelScope.launch {

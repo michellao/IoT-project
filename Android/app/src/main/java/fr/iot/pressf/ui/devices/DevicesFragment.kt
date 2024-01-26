@@ -10,6 +10,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import fr.iot.pressf.databinding.FragmentDevicesBinding
+import fr.iot.pressf.datasource.Device
 
 class DevicesFragment : Fragment() {
 
@@ -35,7 +36,9 @@ class DevicesFragment : Fragment() {
 
         devicesViewModel.devices.observe(viewLifecycleOwner) {
             if (it != null) {
-                recyclerView.adapter = DevicesAdapter(it)
+                recyclerView.adapter = DevicesAdapter(it) { selected ->
+                    devicesViewModel.selected = selected
+                }
             }
         }
 

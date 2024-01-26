@@ -8,7 +8,10 @@ import androidx.recyclerview.widget.RecyclerView
 import fr.iot.pressf.R
 import fr.iot.pressf.datasource.Device
 
-class DevicesAdapter(private val devices: List<Device>) :
+class DevicesAdapter(
+    private val devices: List<Device>,
+    private val onItemClicked: (Int) -> Unit
+) :
     RecyclerView.Adapter<DevicesAdapter.ViewHolder>() {
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val name: TextView = view.findViewById(R.id.device_text_view)
@@ -23,7 +26,9 @@ class DevicesAdapter(private val devices: List<Device>) :
     override fun getItemCount(): Int = devices.size
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.name.text = devices[position].name
+        val device = devices[position]
+        holder.name.text = device.name
+        holder.itemView.setOnClickListener { onItemClicked(position) }
     }
 
 }
