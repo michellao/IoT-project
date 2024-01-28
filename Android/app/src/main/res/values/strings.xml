@@ -8,4 +8,6 @@
     <string name="fan_control">Fan control: </string>
     <string name="temperature">Temperature: </string>
     <string name="humidity">Humidity: </string>
+    <string name="fan_toggle">Fan toggle mode: </string>
+    <string name="fan_activation_threshold">Fan activation threshold: </string>
 </resources>

@@ -66,12 +66,25 @@
     />
 
     <TextView
-            android:id="@+id/fan_control_mode"
+            android:id="@+id/fan_toggle_mode"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textSize="16sp"
             app:layout_constraintTop_toBottomOf="@id/title_control"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            android:text="@string/fan_toggle"
+    />
+
+    <TextView
+            android:id="@+id/fan_threshold"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            app:layout_constraintTop_toBottomOf="@id/fan_toggle_mode"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:text="@string/fan_activation_threshold"
     />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
