@@ -16,8 +16,8 @@
 #include <addons/RTDBHelper.h>
 
 /* Define the WiFi credentials */
-#define WIFI_SSID "nanashi-hvywxx9"
-#define WIFI_PASSWORD "4XC;id/rUukJ"
+// Wifi dans config.h
+#include "config.h"
 
 #define API_KEY "AIzaSyA5L8TCPsduWWBVNbrAq9k4ZrDLPTbrEC4"
 
@@ -50,12 +50,15 @@ FirebaseData streamFan;
 
 FirebaseData streamManualFan;
 
+FirebaseData streamActivationThreshold;
+
 Adafruit_SH1107 display = Adafruit_SH1107(64, 128, &Wire);
 
 unsigned long dataMillis = 0;
 int count = 0;
 bool fanValue = false;
 bool fanManual = false;
+float fanActivationTemperatureThreshold = 24.0;
 
 BME680_Class BME680;
 
@@ -101,43 +104,6 @@ void initWifi() {
   Serial.println();
 }
 
-void streamFanCallback(StreamData data) {
-  // Serial.printf("sream path, %s\nevent path, %s\ndata type, %s\nevent type, %s\n\n", data.streamPath().c_str(), data.dataPath().c_str(),  data.dataType().c_str(), data.eventType().c_str());
-  // printResult(data); // see addons/RTDBHelper.h
-  // Serial.println();
-
-  bool value = data.to<bool>();
-  if(value){
-    analogWrite(A5, 0);
-    show("ON");
-  }
-  else {
-    analogWrite(A5, 0);
-    show("OFF");
-  }
-
-  //Serial.printf("Received streamFan payload size: %d (Max. %d)\n\n", data.payloadLength(), data.maxPayloadLength());
-}
-
-void streamManualFanCallback(StreamData data) {
-  bool value = data.to<bool>();
-  if(value){
-    fanManual = true;
-  }
-  else {
-    fanManual = false;
-  }
-
-}
-
-void streamTimeoutCallback(bool timeout) {
-  if (timeout)
-    Serial.println("streamFan timed out, resuming...\n");
-
-  if (!streamFan.httpConnected())
-    Serial.printf("error code: %d, reason: %s\n\n", streamFan.httpCode(), streamFan.errorReason().c_str());
-}
-
 void setup() {
 
   Serial.begin(115200);
@@ -175,18 +141,24 @@ void setup() {
 
   streamFan.keepAlive(5, 5, 1);
 
-  Firebase.setBool(fbdo, ("/devices/" + String(DEVICE_ID) + "/fan").c_str(), false);
+  //Firebase.setBool(fbdo, ("/devices/" + String(DEVICE_ID) + "/fan").c_str(), false);
   if (!Firebase.beginStream(streamFan, "/devices/" + String(DEVICE_ID) + "/fan"))
     Serial.printf("sream begin error, %s\n\n", streamFan.errorReason().c_str());
 
   Firebase.setStreamCallback(streamFan, streamFanCallback, streamTimeoutCallback);
 
 
-  Firebase.setBool(fbdo, ("/devices/" + String(DEVICE_ID) + "/manualControlFan").c_str(), false);
-  if (!Firebase.beginStream(streamManualFan, "/devices/" + String(DEVICE_ID) + "/manualControlFan"))
+  //Firebase.setBool(fbdo, ("/devices/" + String(DEVICE_ID) + "/manuel_control_fan").c_str(), false);
+  if (!Firebase.beginStream(streamManualFan, "/devices/" + String(DEVICE_ID) + "/manuel_control_fan"))
     Serial.printf("sream begin error, %s\n\n", streamManualFan.errorReason().c_str());
 
   Firebase.setStreamCallback(streamManualFan, streamManualFanCallback, streamTimeoutCallback);
+
+  //Firebase.setFloat(fbdo, ("/devices/" + String(DEVICE_ID) + "/activation_threshold").c_str(), 24);
+  if (!Firebase.beginStream(streamActivationThreshold, "/devices/" + String(DEVICE_ID) + "/activation_threshold"))
+    Serial.printf("sream begin error, %s\n\n", streamManualFan.errorReason().c_str());
+
+  Firebase.setStreamCallback(streamActivationThreshold, streamActivationThresholdCallback, streamTimeoutCallback);
 
 
   /** Now modify the database rules (if not yet modified)
@@ -212,6 +184,60 @@ void setup() {
   Firebase.setString(fbdo, ("/devices/" + String(DEVICE_ID) + "/name").c_str(), DEVICE_NAME);
 }
 
+void streamFanCallback(StreamData data) {
+  bool value = data.to<bool>();
+  if(value){
+    analogWrite(A5, 255);
+    fanValue = true;
+    show("ON");
+  }
+  else {
+    analogWrite(A5, 0);
+    fanValue = false;
+    show("OFF");
+  }
+
+ /**
+    * Serial.printf("sream path, %s\nevent path, %s\ndata type, %s\nevent type, %s\n\n", data.streamPath().c_str(), data.dataPath().c_str(),  data.dataType().c_str(), data.eventType().c_str());
+    * printResult(data); // see addons/RTDBHelper.h
+    * Serial.println();
+    * Serial.printf("Received streamFan payload size: %d (Max. %d)\n\n", data.payloadLength(), data.maxPayloadLength());
+  */
+}
+
+void streamManualFanCallback(StreamData data) {
+  bool value = data.to<bool>();
+  if(value){
+    fanManual = true;
+  }
+  else {
+    fanManual = false;
+  }
+  show(fanValue ? "ON" : "OFF");
+}
+
+void streamActivationThresholdCallback(StreamData data) {
+  fanActivationTemperatureThreshold = data.to<float>();
+  if (!fanManual) {
+    if((sensorData.temperature / 100.0) > fanActivationTemperatureThreshold && !fanValue) {
+      Serial.printf(("INFO | Device " + String(DEVICE_ID) + " - FAN ON : TEMP > " + String(fanActivationTemperatureThreshold) + " : %s\n").c_str(), Firebase.setBool(fbdo, "/devices/" + String(DEVICE_ID) + "/fan", true) ? "ok" : fbdo.errorReason().c_str());
+      fanValue = true;
+    }
+    else if ((sensorData.temperature / 100.0) < fanActivationTemperatureThreshold && fanValue) {
+      Serial.printf(("INFO | Device " + String(DEVICE_ID) + " - FAN OFF : TEMP < " + String(fanActivationTemperatureThreshold) + " : %s\n").c_str(), Firebase.setBool(fbdo, "/devices/" + String(DEVICE_ID) + "/fan", false) ? "ok" : fbdo.errorReason().c_str());
+      fanValue = false;
+    }
+  }
+  show(fanValue ? "ON" : "OFF");
+}
+
+void streamTimeoutCallback(bool timeout) {
+  if (timeout)
+    Serial.println("streamFan timed out, resuming...\n");
+
+  if (!streamFan.httpConnected())
+    Serial.printf("error code: %d, reason: %s\n\n", streamFan.httpCode(), streamFan.errorReason().c_str());
+}
 
 
 void loop() {
@@ -232,15 +258,18 @@ void loop() {
       Serial.printf((String(count) + " | Device " + String(DEVICE_ID) + " - set humidity value : %s\n").c_str(), Firebase.setFloat(fbdo, path + "/" + count +"/humidity", sensorData.humidity / 1000.0) ? String(sensorData.humidity / 1000.0) : fbdo.errorReason().c_str());
       Serial.printf((String(count) + " | Device " + String(DEVICE_ID) + " - set timestamp value : %s\n").c_str(), Firebase.setTimestamp(fbdo, path + "/" + count +"/timestamp") ? "ok" : fbdo.errorReason().c_str());
       count++;
+
+      if (!fanManual) {
+          if((sensorData.temperature / 100.0) > fanActivationTemperatureThreshold && !fanValue) {
+            Serial.printf(("INFO | Device " + String(DEVICE_ID) + " - FAN ON : TEMP > " + String(fanActivationTemperatureThreshold) + " : %s\n").c_str(), Firebase.setBool(fbdo, "/devices/" + String(DEVICE_ID) + "/fan", true) ? "ok" : fbdo.errorReason().c_str());
+            fanValue = true;
+          }
+          else if ((sensorData.temperature / 100.0) < fanActivationTemperatureThreshold && fanValue) {
+            Serial.printf(("INFO | Device " + String(DEVICE_ID) + " - FAN OFF : TEMP < " + String(fanActivationTemperatureThreshold) + " : %s\n").c_str(), Firebase.setBool(fbdo, "/devices/" + String(DEVICE_ID) + "/fan", false) ? "ok" : fbdo.errorReason().c_str());
+            fanValue = false;
+          }
+      }
       
-      if((sensorData.temperature / 100.0) > 24.00 && !fanValue && !fanManual) {
-        Serial.printf(("INFO | Device " + String(DEVICE_ID) + " - FAN ON : TEMP > 24 : %s\n").c_str(), Firebase.setBool(fbdo, "/devices/" + String(DEVICE_ID) + "/fan", true) ? "ok" : fbdo.errorReason().c_str());
-        fanValue = true;
-      }
-      else if ((sensorData.temperature / 100.0) < 24.00 && fanValue && !fanManual) {
-        Serial.printf(("INFO | Device " + String(DEVICE_ID) + " - FAN OFF : TEMP < 24 : %s\n").c_str(), Firebase.setBool(fbdo, "/devices/" + String(DEVICE_ID) + "/fan", false) ? "ok" : fbdo.errorReason().c_str());
-        fanValue = false;
-      }
       show(fanValue ? "ON" : "OFF");
   }
   else if (!Firebase.ready()) {
@@ -250,12 +279,15 @@ void loop() {
 }
 
 void show(String msg) {
+  String fanMode = fanManual ? "Manuel" : "Automatique";
   display.clearDisplay();
   display.setRotation(1);
   display.setTextSize(1.4);
   display.setCursor(0,0);
   display.setTextColor(SH110X_WHITE);
   display.println("FAN : " + msg);
+  display.println("   MODE : " + fanMode);
+  display.println("Seuil activ : " + String(fanActivationTemperatureThreshold) + " C");
   display.println("Temp : " + String(sensorData.temperature / 100.0));
   display.println("Humidity : " + String(sensorData.humidity / 1000.0));
   display.display();
