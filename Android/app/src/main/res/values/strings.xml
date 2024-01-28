@@ -3,4 +3,9 @@
     <string name="title_list_devices">List of devices</string>
     <string name="title_chart">Chart</string>
     <string name="title_control">Control</string>
+    <string name="title_live_data">Live data</string>
+    <string name="fan_status">Fan status: </string>
+    <string name="fan_control">Fan control: </string>
+    <string name="temperature">Temperature: </string>
+    <string name="humidity">Humidity: </string>
 </resources>
