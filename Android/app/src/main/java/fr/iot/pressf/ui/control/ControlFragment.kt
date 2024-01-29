@@ -5,13 +5,14 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import fr.iot.pressf.databinding.FragmentControlBinding
+import fr.iot.pressf.ui.devices.DevicesViewModel
 
 class ControlFragment : Fragment() {
     private var _binding: FragmentControlBinding? = null
+    private val devicesViewModel: DevicesViewModel by activityViewModels()
 
-    // This property is only valid between onCreateView and
-    // onDestroyView.
     private val binding get() = _binding!!
     override fun onCreateView(
         inflater: LayoutInflater,
