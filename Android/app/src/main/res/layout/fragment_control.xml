@@ -65,11 +65,10 @@
             android:text="@string/title_control"
     />
 
-    <TextView
-            android:id="@+id/fan_toggle_mode"
-            android:layout_width="match_parent"
+    <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/fan_toggle_value"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="16sp"
             app:layout_constraintTop_toBottomOf="@id/title_control"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -81,10 +80,21 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="16sp"
-            app:layout_constraintTop_toBottomOf="@id/fan_toggle_mode"
+            app:layout_constraintTop_toBottomOf="@id/fan_toggle_value"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:text="@string/fan_activation_threshold"
+            android:labelFor="@id/fan_threshold_value"
     />
+
+    <EditText
+            android:id="@+id/fan_threshold_value"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/fan_threshold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:inputType="numberDecimal"
+            android:autofillHints=""/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
