@@ -1,6 +1,8 @@
 package fr.iot.pressf.ui.control
 
+import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,7 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import com.google.firebase.Firebase
-import com.google.firebase.database.database
+import com.google.firebase.database.*
 import fr.iot.pressf.R
 import fr.iot.pressf.databinding.FragmentControlBinding
 import fr.iot.pressf.ui.devices.DevicesViewModel
@@ -65,6 +67,34 @@ class ControlFragment : Fragment() {
             database.child("devices").child(indexDevice.toString()).child("manual_control_fan").setValue(!isChecked)
         }
 
+        displayLiveData()
         return root
+    }
+
+    fun displayLiveData() {
+        val indexDevice = devicesViewModel.selected
+        val temperatureTextView = binding.temperatureNow
+        val humidityTextView = binding.humidityNow
+
+        val database = Firebase.database.reference
+        val latestDataId = database.child("devices").child(indexDevice.toString()).child("latest")
+        latestDataId.addValueEventListener(object : ValueEventListener {
+            @SuppressLint("SetTextI18n")
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val dataId = snapshot.getValue<Int>()
+                val dataRef = database.child("data").child(indexDevice.toString()).child(dataId.toString())
+                dataRef.child("temperature").get().addOnSuccessListener {
+                    temperatureTextView.text = resources.getString(R.string.temperature) + " " + it.value.toString()
+                }
+                dataRef.child("humidity").get().addOnSuccessListener {
+                    humidityTextView.text = resources.getString(R.string.humidity) + " " + it.value.toString()
+                }
+            }
+
+            override fun onCancelled(db: DatabaseError) {
+                Log.e("database", "Error while fetching data: ", db.toException())
+            }
+
+        })
     }
 }
