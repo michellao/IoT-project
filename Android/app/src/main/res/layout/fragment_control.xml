@@ -75,12 +75,22 @@
             android:text="@string/fan_toggle"
     />
 
+    <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/fan_automatic_toggle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/fan_automatic_toggle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/fan_toggle_value"
+    />
+
     <TextView
             android:id="@+id/fan_threshold"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="16sp"
-            app:layout_constraintTop_toBottomOf="@id/fan_toggle_value"
+            app:layout_constraintTop_toBottomOf="@id/fan_automatic_toggle"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:text="@string/fan_activation_threshold"

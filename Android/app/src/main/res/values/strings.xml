@@ -10,4 +10,5 @@
     <string name="humidity">Humidity: </string>
     <string name="fan_toggle">Fan toggle mode: </string>
     <string name="fan_activation_threshold">Fan activation threshold: </string>
+    <string name="fan_automatic_toggle">Fan manual/automatic: </string>
 </resources>
