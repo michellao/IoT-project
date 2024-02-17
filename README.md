@@ -7,4 +7,8 @@
 
 ## Appareils contrôler
 
-- Prise connecté
+- Ventilateur
+
+## Fonctions :
+ - Controle manuel ou atomatique du ventilateur
+ - Seuil de la température d'activation du ventilateur configurable
