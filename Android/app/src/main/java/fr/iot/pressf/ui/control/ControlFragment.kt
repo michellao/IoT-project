@@ -57,7 +57,7 @@ class ControlFragment : Fragment() {
         val fanActivationThreshold = binding.fanThresholdValue
         fanActivationThreshold.setOnEditorActionListener { _, action, _ ->
             if (action == EditorInfo.IME_ACTION_DONE) {
-                val threshold = fanActivationThreshold.text.toString().toInt()
+                val threshold = fanActivationThreshold.text.toString().toFloat()
                 database.child("devices").child(indexDevice.toString()).child("activation_threshold").setValue(threshold)
             }
             return@setOnEditorActionListener true
