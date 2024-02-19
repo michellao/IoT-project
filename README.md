@@ -1,5 +1,11 @@
 # IoT Project
 
+## Installation
+
+Brancher le **ventilateur** sur le pin **A4**
+
+Brancher le **BME680** sur le pin **I2C_1**
+
 ## Capteurs
 
 - Température
