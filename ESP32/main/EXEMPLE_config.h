@@ -4,7 +4,7 @@
 #define WIFI_PASSWORD "WIFI_PASSWORD"
 
 /* Firebase API Key */
-#define API_KEY "AIzaSyA5L8TCPsduWWBVNbrAq9k4ZrDLPTbrEC4"
+#define API_KEY ""
 
 // Replace with the new user in Authenticate
 #define USER_EMAIL "example@example.com"
