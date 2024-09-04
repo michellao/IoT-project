@@ -19,21 +19,6 @@
 // Wifi dans config.h
 #include "config.h"
 
-#define API_KEY "AIzaSyA5L8TCPsduWWBVNbrAq9k4ZrDLPTbrEC4"
-
-#define USER_EMAIL "sansnom01@proton.me"
-#define USER_PASSWORD "sansnom01@proton.me"
-
-#define DATABASE_URL "esp32-13749-default-rtdb.europe-west1.firebasedatabase.app" //<databaseName>.firebaseio.com or <databaseName>.<region>.firebasedatabase.app
-
-/** Define the database secret (optional)
-  *
-  * This database secret needed only for this example to modify the database rules
-  *
-  * If you edit the database rules yourself, this is not required.
-  */
-#define DATABASE_SECRET "DATABASE_SECRET"
-
 #define DEVICE_ID "0"
 #define DEVICE_NAME "Home"
 
